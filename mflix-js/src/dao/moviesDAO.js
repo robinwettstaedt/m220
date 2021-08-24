@@ -11,7 +11,7 @@ export default class MoviesDAO {
     }
     try {
       mflix = await conn.db(process.env.MFLIX_NS)
-      movies = await conn.db(process.env.MFLIX_NS).collection("movies")
+movies = await conn.db(process.env.MFLIX_NS).collection("movies")
       this.movies = movies // this is only for testing
     } catch (e) {
       console.error(
@@ -188,11 +188,14 @@ export default class MoviesDAO {
 
     The queryPipeline is a Javascript array, so you can use push() or concat()
     to complete this task, but you might have to do something about `const`.
-    */
+*/
 
     const queryPipeline = [
       matchStage,
       sortStage,
+      skipStage,
+      limitStage,
+      facetStage,
       // TODO Ticket: Faceted Search
       // Add the stages to queryPipeline in the correct order.
     ]
@@ -258,7 +261,7 @@ export default class MoviesDAO {
 
     // TODO Ticket: Paging
     // Use the cursor to only return the movies that belong on the current page
-    const displayCursor = cursor.limit(moviesPerPage)
+    const displayCursor = cursor.limit(moviesPerPage).skip(moviesPerPage * page)
 
     try {
       const moviesList = await displayCursor.toArray()
