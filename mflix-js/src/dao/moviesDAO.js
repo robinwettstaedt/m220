@@ -11,7 +11,7 @@ export default class MoviesDAO {
     }
     try {
       mflix = await conn.db(process.env.MFLIX_NS)
-movies = await conn.db(process.env.MFLIX_NS).collection("movies")
+      movies = await conn.db(process.env.MFLIX_NS).collection("movies")
       this.movies = movies // this is only for testing
     } catch (e) {
       console.error(
@@ -307,9 +307,10 @@ movies = await conn.db(process.env.MFLIX_NS).collection("movies")
           $lookup: {
             from: "comments",
             let: {
-              id: "$_id"
+              id: "$_id",
             },
-            pipeline: [{
+            pipeline: [
+              {
                 // only join comments with a match movie_id
                 $match: {
                   $expr: {
@@ -328,7 +329,6 @@ movies = await conn.db(process.env.MFLIX_NS).collection("movies")
             as: "comments",
           },
         },
-        
       ]
       return await movies.aggregate(pipeline).next()
     } catch (e) {
@@ -341,6 +341,14 @@ movies = await conn.db(process.env.MFLIX_NS).collection("movies")
 
       // TODO Ticket: Error Handling
       // Catch the InvalidId error by string matching, and then handle it.
+      if (
+        e.message.startsWith("E11000 duplicate key error collection") ||
+        e.message.startsWith(
+          "Argument passed in must be a single String of 12 bytes",
+        )
+      ) {
+        return null
+      }
       console.error(`Something went wrong in getMovieByID: ${e}`)
       throw e
     }
